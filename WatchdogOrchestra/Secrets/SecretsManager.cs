@@ -26,7 +26,7 @@ public static class SecretsManager
 		var jDoc = JsonNode.Parse(secretsJson, new JsonNodeOptions
 		{
 			PropertyNameCaseInsensitive = true,
-		});
+		}) ?? new JsonObject();
 
 		var secrets = jDoc["Security"];
 
