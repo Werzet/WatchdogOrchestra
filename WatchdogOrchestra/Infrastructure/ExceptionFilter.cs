@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using WatchdogOrchestra.Controllers;
 using WatchdogOrchestra.Controllers.Login;
 
 namespace WatchdogOrchestra.Infrastructure
@@ -17,6 +18,11 @@ namespace WatchdogOrchestra.Infrastructure
 			{
 				statusCode = HttpStatusCode.Unauthorized;
 				message = loginExc.Message;
+			}
+			else if (context.Exception is InstanceNotFoundException notFoundException)
+			{
+				statusCode = HttpStatusCode.NotFound;
+				message = notFoundException.Message;
 			}
 			else
 			{

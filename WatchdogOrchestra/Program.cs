@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using WatchdogOrchestra.Configuration;
+using WatchdogOrchestra.Infrastructure;
+using WatchdogOrchestra.Secrets;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,10 +13,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.Configure<ServersConfiguration>(builder.Configuration.GetSection("Servers"));
+SecretsManager.CreateTokenKey();
+
+builder.Services
+	.Configure<ServersConfiguration>(builder.Configuration.GetSection("Servers"));
 builder.Services
 	.Configure<TokenConfiguration>(builder.Configuration.GetSection("Security"))
-	.AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerAuthorization>();
+	.AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigureJWTBearerAuthorization>();
+builder.Services
+	.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+	.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme);
+
+builder.Services
+	.AddControllers(opt =>
+	{
+		opt.Filters.Add<ExceptionFilter>();
+	});
 
 var app = builder.Build();
 

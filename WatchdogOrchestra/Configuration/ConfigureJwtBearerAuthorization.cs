@@ -4,11 +4,11 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace WatchdogOrchestra.Configuration;
 
-public class ConfigureJwtBearerAuthorization : IConfigureNamedOptions<JwtBearerOptions>
+public class ConfigureJWTBearerAuthorization : IConfigureNamedOptions<JwtBearerOptions>
 {
 	private readonly TokenConfiguration _tokenOptions;
 
-	public ConfigureJwtBearerAuthorization(IOptions<TokenConfiguration> tokenOptions)
+	public ConfigureJWTBearerAuthorization(IOptions<TokenConfiguration> tokenOptions)
 	{
 		_tokenOptions = tokenOptions.Value;
 	}
@@ -21,7 +21,7 @@ public class ConfigureJwtBearerAuthorization : IConfigureNamedOptions<JwtBearerO
 		}
 
 		if (name == JwtBearerDefaults.AuthenticationScheme)
-		{
+		{ 
 			options.RequireHttpsMetadata = false;
 
 			options.TokenValidationParameters = new TokenValidationParameters
@@ -31,7 +31,7 @@ public class ConfigureJwtBearerAuthorization : IConfigureNamedOptions<JwtBearerO
 				ValidateAudience = true,
 				ValidAudience = _tokenOptions.Audience,
 				ValidateLifetime = true,
-				IssuerSigningKey = ,
+				IssuerSigningKey = _tokenOptions.GetSymmetricSecurityKey(),
 				ValidateIssuerSigningKey = true
 			};
 		}
