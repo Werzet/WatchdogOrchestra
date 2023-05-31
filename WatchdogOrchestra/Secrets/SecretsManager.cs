@@ -12,16 +12,16 @@ public static class SecretsManager
 {
 	public static void CreateTokenKey()
 	{
-		var secretId = Assembly.GetExecutingAssembly().GetCustomAttribute<UserSecretsIdAttribute>()?.UserSecretsId;
+		//var secretId = Assembly.GetExecutingAssembly().GetCustomAttribute<UserSecretsIdAttribute>()?.UserSecretsId;
 
-		if (secretId == null)
-		{
-			throw new ArgumentNullException(nameof(secretId));
-		}
+		//if (secretId == null)
+		//{
+		//	throw new ArgumentNullException(nameof(secretId));
+		//}
 
-		var secretPath = PathHelper.GetSecretsPathFromSecretsId(secretId);
+		//var secretPath = PathHelper.GetSecretsPathFromSecretsId(secretId);
 
-		var secretsJson = File.ReadAllText(secretPath);
+		var secretsJson = File.ReadAllText("appsettings.json");
 
 		var jDoc = JsonNode.Parse(secretsJson, new JsonNodeOptions
 		{
@@ -45,7 +45,7 @@ public static class SecretsManager
 
 			var newSecrets = jDoc.ToJsonString(new JsonSerializerOptions() { WriteIndented = true });
 
-			File.WriteAllText(secretPath, newSecrets);
+			File.WriteAllText("appsettings.json", newSecrets);
 		}
 	}
 
