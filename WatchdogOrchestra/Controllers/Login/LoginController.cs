@@ -8,7 +8,7 @@ using WatchdogOrchestra.Models;
 namespace WatchdogOrchestra.Controllers.Login
 {
 	[ApiController]
-	[Route("[controller]")]
+	[Route("/[controller]")]
 	public class LoginController : ControllerBase
 	{
 		private readonly TokenConfiguration _tokenOptions;
@@ -19,7 +19,7 @@ namespace WatchdogOrchestra.Controllers.Login
 		}
 
 		[HttpPost]
-		public string Login([FromBody] LoginRequestParameters requestParameters)
+		public LoginResponse Login([FromBody] LoginRequestParameters requestParameters)
 		{
 			if (requestParameters.UserName == "admin" && requestParameters.Password == "admin")
 			{
@@ -29,7 +29,7 @@ namespace WatchdogOrchestra.Controllers.Login
 			throw new LoginException();
 		}
 
-		public string GetToken(SymmetricSecurityKey securityKey)
+		private LoginResponse GetToken(SymmetricSecurityKey securityKey)
 		{
 			var now = DateTime.UtcNow;
 
@@ -42,7 +42,10 @@ namespace WatchdogOrchestra.Controllers.Login
 
 			var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-			return encodedJwt;
+			return new LoginResponse
+			{
+				Token = encodedJwt 
+			};
 		}
 
 

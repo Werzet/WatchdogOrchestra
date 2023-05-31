@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using WatchdogOrchestra.Configuration;
@@ -10,13 +9,15 @@ namespace WatchdogOrchestra.Controllers;
 public class ServerInstanceController : OrchestraControllerBase
 {
 	private readonly ServersConfiguration _serverConfiguration;
+	private readonly HttpClient _httpClient;
 
-	public ServerInstanceController(IOptions<ServersConfiguration> serverConfiguration)
+	public ServerInstanceController(IOptions<ServersConfiguration> serverConfiguration, HttpClient httpClient)
 	{
 		_serverConfiguration = serverConfiguration.Value;
+		_httpClient = httpClient;
 	}
 
-	[HttpGet("list")]
+	[HttpGet]
 	public List<InstanceConfiguration> GetList()
 	{
 		return _serverConfiguration.Instances;
@@ -30,7 +31,7 @@ public class ServerInstanceController : OrchestraControllerBase
 
 		var watchDogClient = GetClient(instance);
 
-		await watchDogClient.RestartAsync(string.Empty, instance.Name);
+		await watchDogClient.RestartAsync(GetAuthorization(instance), instance.Name);
 	}
 
 	[HttpPost("{name}/update")]
@@ -41,14 +42,16 @@ public class ServerInstanceController : OrchestraControllerBase
 
 		var watchDogClient = GetClient(instance);
 
-		await watchDogClient.UpdateAsync(string.Empty, instance.Name);
+		await watchDogClient.UpdateAsync(GetAuthorization(instance), instance.Name);
 	}
 
-	private static Watchdog.Client GetClient(InstanceConfiguration instance)
+	private Watchdog.Client GetClient(InstanceConfiguration instance)
 	{
-		var client = new HttpClient();
-		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"{instance.Name}:{instance.ApiToken}")));
+		return new Watchdog.Client(instance.Address, _httpClient);
+	}
 
-		return new Watchdog.Client(instance.Address, client);
+	private static string GetAuthorization(InstanceConfiguration instance)
+	{
+		return $"Basic {Convert.ToBase64String(Encoding.UTF8.GetBytes($"{instance.Name}:{instance.ApiToken}"))}";
 	}
 }

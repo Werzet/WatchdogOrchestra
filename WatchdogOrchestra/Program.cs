@@ -1,6 +1,9 @@
+using System.Reflection.Metadata.Ecma335;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Options;
 using WatchdogOrchestra.Configuration;
+using WatchdogOrchestra.Controllers.Login;
 using WatchdogOrchestra.Infrastructure;
 using WatchdogOrchestra.Secrets;
 
@@ -9,9 +12,20 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(opt =>
+{
+	opt.CustomOperationIds(operationOpts =>
+	{
+		if (operationOpts.ActionDescriptor is ControllerActionDescriptor actionDescriptor)
+		{
+			return $"{actionDescriptor.ControllerName}_{actionDescriptor.ActionName}";
+		}
+
+		return null;
+	});
+});
 
 SecretsManager.CreateTokenKey();
 
@@ -23,6 +37,13 @@ builder.Services
 builder.Services
 	.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 	.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme);
+
+builder.Services.AddHttpClient<LoginController>().ConfigurePrimaryHttpMessageHandler(() =>
+new HttpClientHandler
+{
+	AllowAutoRedirect = true,
+	UseDefaultCredentials = true
+});
 
 builder.Services
 	.AddControllers(opt =>
