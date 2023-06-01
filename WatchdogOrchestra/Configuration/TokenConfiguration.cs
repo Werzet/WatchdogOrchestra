@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 
 namespace WatchdogOrchestra.Configuration;
 
@@ -18,6 +17,6 @@ public class TokenConfiguration
 			throw new ArgumentException("Ключ шифрования не инициализирован.");
 		}
 
-		return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TokenKey));
+		return new SymmetricSecurityKey(Convert.FromBase64String(TokenKey));
 	}
 }

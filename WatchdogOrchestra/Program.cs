@@ -1,4 +1,3 @@
-using System.Reflection.Metadata.Ecma335;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Options;
@@ -29,11 +28,20 @@ builder.Services.AddSwaggerGen(opt =>
 
 SecretsManager.CreateTokenKey();
 
+builder
+	.Configuration
+	.AddJsonFile(SecretsManager.FileName);
+
 builder.Services
 	.Configure<ServersConfiguration>(builder.Configuration.GetSection("Servers"));
+
+builder.Services
+	.Configure<LoginInfoConfiguration>(builder.Configuration.GetSection("LoginInfo"));
+
 builder.Services
 	.Configure<TokenConfiguration>(builder.Configuration.GetSection("Security"))
 	.AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigureJWTBearerAuthorization>();
+
 builder.Services
 	.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 	.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme);

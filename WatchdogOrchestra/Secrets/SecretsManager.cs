@@ -1,29 +1,19 @@
-﻿using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
+﻿using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using WatchdogOrchestra.Configuration;
 
 namespace WatchdogOrchestra.Secrets;
 
 public static class SecretsManager
 {
+	public static string FileName => "token.json";
+
 	public static void CreateTokenKey()
 	{
-		//var secretId = Assembly.GetExecutingAssembly().GetCustomAttribute<UserSecretsIdAttribute>()?.UserSecretsId;
+		var tokenJson = File.ReadAllText(FileName);
 
-		//if (secretId == null)
-		//{
-		//	throw new ArgumentNullException(nameof(secretId));
-		//}
-
-		//var secretPath = PathHelper.GetSecretsPathFromSecretsId(secretId);
-
-		var secretsJson = File.ReadAllText("appsettings.json");
-
-		var jDoc = JsonNode.Parse(secretsJson, new JsonNodeOptions
+		var jDoc = JsonNode.Parse(tokenJson, new JsonNodeOptions
 		{
 			PropertyNameCaseInsensitive = true,
 		}) ?? new JsonObject();
@@ -43,9 +33,9 @@ public static class SecretsManager
 		{
 			secrets[nameof(TokenConfiguration.TokenKey)] = GenerateTokenKey();
 
-			var newSecrets = jDoc.ToJsonString(new JsonSerializerOptions() { WriteIndented = true });
+			var newTokenJson = jDoc.ToJsonString(new JsonSerializerOptions() { WriteIndented = true });
 
-			File.WriteAllText("appsettings.json", newSecrets);
+			File.WriteAllText(FileName, newTokenJson);
 		}
 	}
 
@@ -57,6 +47,6 @@ public static class SecretsManager
 
 		generator.GetBytes(bytes);
 
-		return Encoding.UTF8.GetString(bytes);
+		return Convert.ToBase64String(bytes);
 	}
 }

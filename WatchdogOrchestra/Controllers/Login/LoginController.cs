@@ -12,16 +12,18 @@ namespace WatchdogOrchestra.Controllers.Login
 	public class LoginController : ControllerBase
 	{
 		private readonly TokenConfiguration _tokenOptions;
+		private readonly LoginInfoConfiguration _loginConfiguration;
 
-		public LoginController(IOptions<TokenConfiguration> tokenOptions)
+		public LoginController(IOptions<TokenConfiguration> tokenOptions, IOptions<LoginInfoConfiguration> loginConfiguration)
 		{
 			_tokenOptions = tokenOptions.Value;
+			_loginConfiguration = loginConfiguration.Value;
 		}
 
 		[HttpPost]
 		public LoginResponse Login([FromBody] LoginRequestParameters requestParameters)
 		{
-			if (requestParameters.UserName == "admin" && requestParameters.Password == "admin")
+			if (requestParameters.UserName == _loginConfiguration.UserName && requestParameters.Password == _loginConfiguration.Password)
 			{
 				return GetToken(_tokenOptions.GetSymmetricSecurityKey());
 			}
