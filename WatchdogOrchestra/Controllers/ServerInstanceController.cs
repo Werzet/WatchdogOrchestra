@@ -45,9 +45,20 @@ public class ServerInstanceController : OrchestraControllerBase
 		await watchDogClient.UpdateAsync(GetAuthorization(instance), instance.Name);
 	}
 
-	private Watchdog.Client GetClient(InstanceConfiguration instance)
+	[HttpPost("{name}/execute-command")]
+	public async Task ExecuteCommand(string name, [FromBody]Watchdog.ExecuteCommandParameters parameters)
 	{
-		return new Watchdog.Client(instance.Address, _httpClient);
+		var instance = _serverConfiguration.Instances.FirstOrDefault(x => x.Name == name)
+			?? throw new InstanceNotFoundException(name);
+
+		var watchDogClient = GetClient(instance);
+
+		await watchDogClient.ExecuteCommandAsync(GetAuthorization(instance), instance.Name, parameters);
+	}
+
+	private Watchdog.InstanceClient GetClient(InstanceConfiguration instance)
+	{
+		return new Watchdog.InstanceClient(instance.Address, _httpClient);
 	}
 
 	private static string GetAuthorization(InstanceConfiguration instance)
