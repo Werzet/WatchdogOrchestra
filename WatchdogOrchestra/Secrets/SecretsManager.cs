@@ -7,7 +7,7 @@ namespace WatchdogOrchestra.Secrets;
 
 public static class SecretsManager
 {
-	public static string FileName => "token.json";
+	public static string FileName => "config.json";
 
 	public static void CreateTokenKey()
 	{
