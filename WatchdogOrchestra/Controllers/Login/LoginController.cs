@@ -1,4 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -23,12 +25,24 @@ namespace WatchdogOrchestra.Controllers.Login
 		[HttpPost]
 		public LoginResponse Login([FromBody] LoginRequestParameters requestParameters)
 		{
-			if (requestParameters.UserName == _loginConfiguration.UserName && requestParameters.Password == _loginConfiguration.Password)
+			var userData = _loginConfiguration.Logins.FirstOrDefault(x => x.UserName == requestParameters.UserName);
+
+			if (userData != null && !string.IsNullOrWhiteSpace(userData.Password))
 			{
-				return GetToken(_tokenOptions.GetSymmetricSecurityKey());
+				var hash = GetPasswordHash(requestParameters.Password);
+
+				if (hash == userData.Password)
+				{
+					return GetToken(_tokenOptions.GetSymmetricSecurityKey());
+				}
 			}
 
 			throw new LoginException();
+		}
+
+		private static string GetPasswordHash(string password)
+		{
+			return Convert.ToBase64String(SHA512.HashData(Encoding.ASCII.GetBytes(password)));
 		}
 
 		private LoginResponse GetToken(SymmetricSecurityKey securityKey)
